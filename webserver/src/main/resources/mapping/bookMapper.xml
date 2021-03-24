@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.minidouban.dao.BookRepository">
+    <select id="findByBookId" resultType="com.minidouban.pojo.Book">
+        select *
+        from Book
+        where book_id = #{bookId}
+    </select>
+    <select id="findFuzzily" resultType="com.minidouban.pojo.Book">
+        select
+        * from Book
+        <where>
+            <if test="title != null and title != ''">
+                title like '%${title}%'
+            </if>
+            <if test="authors != null and authors != ''">
+                and authors like '%${authors}%'
+            </if>
+            <if test="commentNum != null">
+                <![CDATA[
+                and comment_num >= #{commentNum}
+             ]]>
+            </if>
+            <if test="commentNum1 != null and commentNum != null">
+                <![CDATA[
+                and comment_num <= #{commentNum1}
+                ]]>
+            </if>
+            <if test="brief != null and brief != ''">
+                and brief like '%${brief}%'
+            </if>
+            <if test="rating != null">
+                <![CDATA[
+                and rating >= #{rating}
+             ]]>
+            </if>
+            <if test="rating1 != null and rating != null">
+                <![CDATA[
+                and rating <= #{rating1}
+                ]]>
+            </if>
+            <if test="pubYear != null">
+                <![CDATA[
+                and pub_year >= #{pubYear}
+             ]]>
+            </if>
+            <if test="pubYear1 != null and pubYear != null">
+                <![CDATA[
+                and pub_year <= #{pubYear1}
+                ]]>
+            </if>
+            <if test="publisher != null and publisher != ''">
+                and publisher like '%${publisher}%'
+            </if>
+            <if test="price != null">
+                <![CDATA[
+                and price >= #{price}
+             ]]>
+            </if>
+            <if test="price1 != null and price != null">
+                <![CDATA[
+                and price <= #{price1}
+                ]]>
+            </if>
+        </where>
+        order by comment_num desc, rating desc
+        limit #{offset} , #{pageSize}
+    </select>
+    <select id="findByKeyword" resultType="Book">
+        select *
+        from Book
+        where title like '%${keyword}%'
+           or authors like '%${keyword}%'
+           or brief like '%${keyword}%'
+           or publisher like '%${keyword}%'
+        order by comment_num desc, rating desc
+        limit #{offset} , #{pageSize}
+    </select>
+</mapper>

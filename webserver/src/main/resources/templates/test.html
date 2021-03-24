@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>test</title>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript">
+        function t() {
+            $.post("test-1",
+                "data=" + "hello",
+                (data) => {
+                    $("#myDiv").text(data);
+                }
+            );
+
+        }
+
+        function t1() {
+            window.location.href = "test";
+        }
+
+    </script>
+</head>
+<body>
+<button onclick="t()" value="click">1</button>
+<button onclick="t1()">2</button>
+<input type="text">
+<p id="myDiv"></p>
+</body>
+</html>

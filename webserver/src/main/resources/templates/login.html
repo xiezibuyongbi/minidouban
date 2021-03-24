@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>登录</title>
+</head>
+<body>
+<form method="post" action="/login">
+    用户名:<br>
+    <input type="text" name="username" value=""><br>
+    密码:<br>
+    <input type="password" name="password" value=""><br>
+    <!--/*@thymesVar id="msg" type=""*/-->
+    <p style="color:red" th:text="${msg}" th:if="${not #strings.isEmpty(msg)}"></p>
+    <br>
+    <input type="submit" value="登录"><br>
+    <a href="/register">注册账号</a><a href="/reset_password" th:align="right">忘记密码?</a>
+</form>
+</body>
+</html>

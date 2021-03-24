@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.minidouban.dao.UserRepository">
+    <select id="findByUsername"
+            resultType="com.minidouban.pojo.User">
+        select *
+        from UserInfo
+        where username = #{username}
+    </select>
+    <select id="findByEmail" resultType="com.minidouban.pojo.User">
+        select *
+        from UserInfo
+        where email = #{email}
+    </select>
+    <update id="updatePasswordByUsernameAndByEmail">
+        update UserInfo
+        set password=#{password}
+        where username = #{username}
+          and email = #{email}
+    </update>
+    <insert id="insert" useGeneratedKeys="true">
+        insert into UserInfo(username, password, email)
+        values (#{username}, #{password}, #{email})
+    </insert>
+    <select id="existsById" resultType="boolean">
+        select count(*)
+        from UserInfo
+        where user_id = #{userId}
+    </select>
+</mapper>

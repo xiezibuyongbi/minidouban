@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.minidouban.dao.ReadingListRepository">
+    <select id="findByUserId" parameterType="long" resultType="com.minidouban.pojo.ReadingList">
+        select *
+        from ReadingList
+        where user_id = #{userId}
+    </select>
+    <insert id="insert" useGeneratedKeys="true">
+        insert into ReadingList(list_name, user_id)
+        values (#{listName}, #{userId})
+    </insert>
+    <select id="findByUserIdAndListId" resultType="com.minidouban.pojo.ReadingList">
+        select *
+        from ReadingList
+        where user_id = #{userId}
+          and list_id = #{listId}
+    </select>
+    <select id="findByUserIdAndListName" resultType="com.minidouban.pojo.ReadingList">
+        select *
+        from ReadingList
+        where user_id = #{userId}
+          and list_name = #{listName}
+    </select>
+    <update id="updateListName">
+        update ReadingList
+        set list_name = #{desiredListName}
+        where user_id = #{userId}
+          and list_name = #{oldListName}
+    </update>
+    <delete id="deleteByUserIdAndListId">
+        delete
+        from ReadingList
+        where user_id = #{userId}
+          and list_id = #{listId}
+    </delete>
+    <delete id="deleteAllByUserId">
+        delete
+        from ReadingList
+        where user_id = #{userId}
+    </delete>
+    <select id="existsById" resultType="boolean">
+        select count(list_id)
+        from ReadingList
+        where list_id = #{listId}
+    </select>
+</mapper>

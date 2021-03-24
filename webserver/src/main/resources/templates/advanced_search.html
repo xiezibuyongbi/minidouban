@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta HTTP-EQUIV="pragma" CONTENT="no-cache">
+    <meta HTTP-EQUIV="Cache-Control" CONTENT="no-store, must-revalidate">
+    <meta HTTP-EQUIV="expires" CONTENT="Wed, 26 Feb 1997 08:21:57 GMT">
+    <meta HTTP-EQUIV="expires" CONTENT="0">
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer"/>
+    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/search.js}"></script>
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <title>高级搜索</title>
+</head>
+<body>
+<!--/*@thymesVar id="username" type=""*/-->
+<table>
+    <div th:if="${not #strings.isEmpty(username)}">
+        <tr>
+            <td>
+                <span>你好,<span th:text="${username}"></span></span>
+            </td>
+            <td><span style="color: white">哈哈哈</span></td>
+            <td>
+                <a href="/logout" style="color: blue" th:align="right">退出登录</a><br>
+            </td>
+        </tr>
+        <tr>
+            <td><span style="color: white">哈哈</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">哈哈</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">哈哈</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">哈哈</span></td>
+        </tr>
+        <tr>
+            <td><span style="color: white">哈哈</span></td>
+        </tr>
+        <tr>
+            <td>
+                <a href="/reading_list" style="color: blue">我的书单</a>
+            </td>
+            <td th:if="${not #strings.isEmpty(username)}">
+                <a href="/search" style="color: blue">关键词搜索</a>
+            </td>
+        </tr>
+    </div>
+    <tr th:if="${#strings.isEmpty(username)}">
+        <td>
+            <div>
+                <a href="/login" style="color: blue">登录并使用书单功能</a>
+            </div>
+        </td>
+        <td>
+            <a href="/search" style="color: blue">关键词搜索</a>
+        </td>
+    </tr>
+    <tr th:if="${not #strings.isEmpty(username)}">
+        <td>
+            <select id="reading-lists" name="selectedListName" th:object="${readingListsName}">
+                <option value="" selected="selected">请选择书单</option>
+                <option th:each="readingListName : ${readingListsName}" th:value="${readingListName}"
+                        th:text="${readingListName}"></option>
+            </select>
+        </td>
+        <td>
+            <input type="submit" value="将选中的书籍加入书单" onclick="return addBookToList()">
+        </td>
+    </tr>
+</table>
+<br>
+<!--/*@thymesVar id="bookPredicate" type=""*/-->
+<form action="/advanced_search" method="post" th:object="${bookPredicate}">
+    <div>
+        <b>不作限制的条件可不填</b>
+    </div>
+    <div>
+        <span>书籍名</span>
+        <input type="text" name="title">
+        <!--        th:value="${bookPredicate.title}">-->
+        <input type="submit" value="搜索">
+    </div>
+    <div>
+        <span>评论数大于等于</span>
+        <input type="text" name="commentNum">
+        <!--        th:value="${bookPredicate.commentNum}">-->
+        <span>，小于等于</span>
+        <input type="text" name="commentNum1">
+        <!--        th:value="${bookPredicate.commentNum1}">-->
+    </div>
+    <div>
+        <span>类型</span>
+        <input type="text" name="brief">
+        <!--        th:value="${bookPredicate.brief}">-->
+    </div>
+    <div>
+        <span>评分大于等于</span>
+        <input type="text" name="rating">
+        <!--        th:value="${bookPredicate.rating}">-->
+        <span>，小于等于</span>
+        <input type="text" name="rating1">
+        <!--        th:value="${bookPredicate.rating1}">-->
+    </div>
+    <div>
+        <span>出版商</span>
+        <input type="text" name="publisher">
+        <!--        th:value="${bookPredicate.publisher}">-->
+    </div>
+    <div>
+        <span>出版年份晚于或等于</span>
+        <input type="text" name="pubYear">
+        <!--        th:value="${bookPredicate.pubYear}">-->
+        <span>，早于或等于</span>
+        <input type="text" name="pubYear1">
+        <!--        th:value="${bookPredicate.pubYear1}">-->
+    </div>
+    <div>
+        <span>定价大于等于</span>
+        <input type="text" name="price">
+        <!--        th:value="${bookPredicate.price}">-->
+        <span>，小于等于</span>
+        <input type="text" name="price1">
+        <!--        th:value="${bookPredicate.price1}">-->
+    </div>
+    <div>
+        <span>作者</span>
+        <input type="text" name="authors">
+        <!--        th:value="${bookPredicate.authors}">-->
+    </div>
+</form>
+<br>
+<div th:if="${not #lists.isEmpty(books)}">
+    <button th:if="${#bools.isTrue(hasPrePage)}" onclick="return pageRequest('0')">上一页</button>
+    <button th:if="${#bools.isFalse(hasPrePage)}" onclick="noPrePagePrompt()">上一页</button>
+    <button th:if="${#bools.isTrue(hasNextPage)}" onclick="return pageRequest('1')">下一页</button>
+    <button th:if="${#bools.isFalse(hasNextPage)}" onclick="noNextPagePrompt()">下一页</button>
+    <form id="page-direction" method="get" action="/advanced_search">
+        <input name="pageDirection" type="hidden">
+        <input name="keyword" type="hidden">
+    </form>
+</div>
+<!--/*@thymesVar id="msg" type=""*/-->
+<div class="container-fluid p-t-15">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-header"><h4></h4></div>
+                <div class="card-body">
+                    <div class="table-responsive" th:unless="${#lists.isEmpty(books)}">
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>
+                                    <button onclick="fullCheckSwitch('bookIdToAdd')">全选/不选</button>
+                                </th>
+                                <th>封面</th>
+                                <th>书籍名</th>
+                                <th>作者</th>
+                                <th>出版社</th>
+                                <th>评论数</th>
+                                <th>价格</th>
+                                <th>出版日期</th>
+                                <th>评分</th>
+                            </tr>
+                            </thead>
+                            <form id="add-book-to-list" action="/add-book?from=2" method="post">
+                                <input type="hidden" id="selected-list-name" name="selectedListName">
+                                <tbody>
+                                <tr th:each="book : ${books}">
+                                    <td>
+                                        <input type="checkbox" name="bookIdToAdd" th:value="${book.bookId}">
+                                    </td>
+                                    <td>
+                                        <img th:src="${book.coverLink}" alt="封面" width="120px" height="160px"/>
+                                    </td>
+                                    <td>
+                                        <div style="text-align: center">
+                                            <a th:text="${book.title}" th:href="${book.link}"></a>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.authors}" align="center"></div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.publisher}" align="center"></div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.commentNum}" align="center"></div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.price}" align="center"></div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.pubYear}" align="center"></div>
+                                    </td>
+                                    <td>
+                                        <div th:text="${book.rating}" align="center"></div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </form>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div style="float: right">
+    <button onclick="return backToTop()">回到顶部</button>
+</div>
+</body>
+</html>

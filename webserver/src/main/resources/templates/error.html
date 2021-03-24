@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <link th:href="@{/css/error.css}" rel="stylesheet">
+    <title>Bad Request</title>
+</head>
+
+<body>
+<div class="da-wrapper">
+    <div class="da-content">
+        <div class="da-container clearfix">
+            <div class="da-error-wrapper">
+                <div class="da-error-pin"></div>
+                <div class="da-error-code">
+                    <p class="tip">STATUS:403</p>
+                    <p class="tip2">服务器开小差了</p>
+                    <p class="tip3">You don't have permission to access the URL on this server.</p>
+                </div>
+                <h1 class="da-error-heading">Sorry, 请稍后再试 !!!</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
