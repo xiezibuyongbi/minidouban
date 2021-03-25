@@ -48,6 +48,9 @@ public class UserService {
             return unexpectedFailure;
         }
         User user = userRepository.findByUsername(username);
+        if (user == null) {
+            return unexpectedFailure;
+        }
         try {
             jedisUtils.setExpire(key, expireSeconds, objectMapper.writeValueAsString(user));
         } catch (JsonProcessingException e) {
