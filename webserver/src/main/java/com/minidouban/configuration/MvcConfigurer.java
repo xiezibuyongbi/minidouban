@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Configuration
 public class MvcConfigurer implements WebMvcConfigurer {
     @Override
@@ -15,7 +18,8 @@ public class MvcConfigurer implements WebMvcConfigurer {
         );
         registry.addInterceptor(new NotLoggedOnInterceptor()).addPathPatterns(
                 "/logout**", "/reading_list**", "/add-book**", "/rename-list**",
-                "/create-list**", "/delete-list**", "/delete-all-list**", "remove-book**"
+                "/create-list**", "/delete-list**", "/delete-all-list**",
+                "remove-book**"
         );
     }
 
