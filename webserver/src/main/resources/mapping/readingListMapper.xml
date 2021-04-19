@@ -42,7 +42,6 @@
     <select id="existsById" resultType="boolean">
         select count(list_id)
         from ReadingList
-        where list_id = #{listId} for
-        update
+        where list_id = #{listId}
     </select>
 </mapper>

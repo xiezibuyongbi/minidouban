@@ -25,7 +25,6 @@
     <select id="existsById" resultType="boolean">
         select count(*)
         from UserInfo
-        where user_id = #{userId} for
-        update
+        where user_id = #{userId}
     </select>
 </mapper>
