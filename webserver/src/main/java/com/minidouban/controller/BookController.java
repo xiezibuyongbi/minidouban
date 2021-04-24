@@ -6,6 +6,7 @@ import com.minidouban.pojo.BookPredicate;
 import com.minidouban.pojo.Page;
 import com.minidouban.pojo.PageInfo;
 import com.minidouban.service.BookService;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,8 @@ public class BookController {
     private static final int pageSize = 10;
 
     @GetMapping("/search")
-    public String search(Model model, HttpSession session, String keyword, @RequestParam(value = "pageNum", required = false, defaultValue = "0") int pageNum) {
+    public String search(Model model, HttpSession session, String keyword,
+                         @RequestParam(value = "pageNum", required = false, defaultValue = "0") int pageNum) {
         String username = (String) session.getAttribute("username");
         if (!isEmpty(username)) {
             model.addAttribute("username", username);
@@ -37,7 +39,8 @@ public class BookController {
         if (isEmpty(keyword)) {
             return "search";
         }
-        Page<Book> page = bookService.findByKeyword(keyword, PageInfo.of(pageNum, pageSize));
+        Page<Book> page = bookService
+                .findByKeyword(keyword, PageInfo.of(pageNum, pageSize));
         if (page.isEmpty()) {
             model.addAttribute("msg", Prompt.noSearchResultPrompt);
             return "search";
@@ -55,9 +58,11 @@ public class BookController {
             Map<String, Long> readingListMap = generateListMap(session);
             model.addAttribute("readingListsName", readingListMap.keySet());
         }
-        BookPredicate bookPredicate = (BookPredicate) session.getAttribute("bookPredicate");
+        BookPredicate bookPredicate =
+                (BookPredicate) session.getAttribute("bookPredicate");
         if (bookPredicate != null) {
-            Page<Book> bookSlice = bookService.findFuzzily(bookPredicate, PageInfo.of(pageNum, pageSize));
+            Page<Book> bookSlice = bookService
+                    .findFuzzily(bookPredicate, PageInfo.of(pageNum, pageSize));
             model.addAttribute("books", bookSlice.getContent());
         }
         return "advanced_search";
@@ -69,4 +74,5 @@ public class BookController {
         session.setAttribute("bookPredicate", bookPredicate);
         return "redirect:/advanced_search";
     }
+
 }

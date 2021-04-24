@@ -1,11 +1,11 @@
-package com.minidouban.service;
+package com.minidouban.component;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class PasswordService {
+public class PasswordUtils {
     private static final PasswordEncoder passwordEncoder;
 
     static {

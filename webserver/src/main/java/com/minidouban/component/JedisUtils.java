@@ -22,13 +22,21 @@ public class JedisUtils {
     public String setExpire(String key, int seconds, String value) {
         Random random = new Random();
         try (Jedis jedis = jedisPool.getResource()) {
-            return jedis.setex(key, seconds + random.nextInt(floatExpiredSeconds), value);
+            return jedis
+                    .setex(key, seconds + random.nextInt(floatExpiredSeconds),
+                            value);
         }
     }
 
     public String get(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.get(key);
+        }
+    }
+
+    public Long delete(String key) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.del(key);
         }
     }
 }
