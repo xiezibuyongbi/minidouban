@@ -21,7 +21,6 @@ import java.util.regex.Pattern;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 @Service
-@Transactional
 public class BookService {
     @Resource
     private BookRepository bookRepository;
@@ -34,33 +33,42 @@ public class BookService {
     static {
         resultExpireSeconds = 10 * 60;
         objectMapper = new ObjectMapper();
-        objectMapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        objectMapper.setVisibility(PropertyAccessor.FIELD,
+                JsonAutoDetect.Visibility.ANY);
     }
 
     public Book findByBookId(long bookId) {
         return bookRepository.findByBookId(bookId);
     }
 
-    public Page<Book> findFuzzily(BookPredicate bookPredicate, PageInfo pageInfo) {
-        String key = md5DigestAsHex((bookPredicate.toString() + pageInfo.toString()).getBytes());
+    @Transactional
+    public Page<Book> findFuzzily(BookPredicate bookPredicate,
+                                  PageInfo pageInfo) {
+        String key = md5DigestAsHex(
+                (bookPredicate.toString() + pageInfo.toString()).getBytes());
         String redisResult = jedisUtils.get(key);
         if (redisResult != null) {
             try {
-                return objectMapper.readValue(redisResult, new TypeReference<Page<Book>>() {
-                });
+                return objectMapper.readValue(redisResult,
+                        new TypeReference<Page<Book>>() {
+                        });
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }
-        Page<Book> page = new Page<>(pageInfo, bookRepository.findFuzzily(bookPredicate, pageInfo.getOffset(), pageInfo.getPageSize()));
+        Page<Book> page = new Page<>(pageInfo, bookRepository
+                .findFuzzily(bookPredicate, pageInfo.getOffset(),
+                        pageInfo.getPageSize()));
         try {
-            jedisUtils.setExpire(key, resultExpireSeconds, objectMapper.writeValueAsString(page));
+            jedisUtils.setExpire(key, resultExpireSeconds,
+                    objectMapper.writeValueAsString(page));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
         return page;
     }
 
+    @Transactional
     public Page<Book> findByKeyword(String keyword, PageInfo pageInfo) {
         if (containsInvalidCharacter(keyword)) {
             return dummy;
@@ -69,16 +77,20 @@ public class BookService {
         String redisResult = jedisUtils.get(key);
         if (redisResult != null) {
             try {
-                return objectMapper.readValue(redisResult, new TypeReference<Page<Book>>() {
-                });
+                return objectMapper.readValue(redisResult,
+                        new TypeReference<Page<Book>>() {
+                        });
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         }
-        List<Book> queryResult = bookRepository.findByKeyword(keyword, pageInfo.getOffset(), pageInfo.getPageSize());
+        List<Book> queryResult = bookRepository
+                .findByKeyword(keyword, pageInfo.getOffset(),
+                        pageInfo.getPageSize());
         Page<Book> page = new Page<>(pageInfo, queryResult);
         try {
-            jedisUtils.setExpire(key, resultExpireSeconds, objectMapper.writeValueAsString(page));
+            jedisUtils.setExpire(key, resultExpireSeconds,
+                    objectMapper.writeValueAsString(page));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -93,7 +105,8 @@ public class BookService {
         if ("".equals(str)) {
             return true;
         }
-        final String pattern = ".*[\\s`@￥$^……*（()）\\_=\\[\\]｛{}｝\\|、\\\\；;‘'“”\"<>/].*";
+        final String pattern =
+                ".*[\\s`@￥$^……*（()）\\_=\\[\\]｛{}｝\\|、\\\\；;‘'“”\"<>/].*";
         return Pattern.matches(pattern, str);
     }
 }

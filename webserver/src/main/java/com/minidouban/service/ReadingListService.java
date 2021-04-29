@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 
 @Service
-@Transactional
 public class ReadingListService {
     @Resource
     private ReadingListRepository readingListRepository;
@@ -26,45 +25,36 @@ public class ReadingListService {
     private UserRepository userRepository;
 
     public List<ReadingList> getReadingListsOfUser(long userId) {
-        if (!userRepository.existsById(userId)) {
-            return new ArrayList<>();
-        }
         return readingListRepository.findByUserId(userId);
     }
 
-    public int renameReadingList(long userId, String oldListName, String desiredListName) {
+    public int renameReadingList(long userId, String oldListName,
+                                 String desiredListName) {
         if (containsInvalidCharacter(desiredListName)) {
             return 0;
         }
-        if (readingListRepository.findByUserIdAndListName(userId, oldListName) == null) {
-            return 0;
-        }
-        if (readingListRepository.findByUserIdAndListName(userId, desiredListName) != null) {
-            return 0;
-        }
-        return readingListRepository.updateListName(userId, oldListName, desiredListName);
+        return readingListRepository
+                .updateListName(userId, oldListName, desiredListName);
     }
 
+    @Transactional
     public long createReadingList(long userId, String listName) {
         if (containsInvalidCharacter(listName)) {
-            return 0;
-        }
-        if (!userRepository.existsById(userId)) {
-            return 0;
-        }
-        if (readingListRepository.findByUserIdAndListName(userId, listName) != null) {
             return 0;
         }
         if (readingListRepository.insert(userId, listName) == 0) {
             return 0;
         }
-        return readingListRepository.findByUserIdAndListName(userId, listName).getListId();
-    }
-
-    public int deleteReadingList(long userId, long listId) {
-        if (readingListRepository.findByUserIdAndListId(userId, listId) == null) {
+        ReadingList readingList =
+                readingListRepository.findByUserIdAndListName(userId, listName);
+        if (readingList == null) {
             return 0;
         }
+        return readingList.getListId();
+    }
+
+    @Transactional
+    public int deleteReadingList(long userId, long listId) {
         readingListBookRepository.deleteAllByListId(listId);
         return readingListRepository.deleteByUserIdAndListId(userId, listId);
     }
@@ -73,7 +63,8 @@ public class ReadingListService {
         if (!userRepository.existsById(userId)) {
             return 0;
         }
-        getReadingListsOfUser(userId).forEach(list -> readingListBookRepository.deleteAllByListId(list.getListId()));
+        getReadingListsOfUser(userId).forEach(list -> readingListBookRepository
+                .deleteAllByListId(list.getListId()));
         return readingListRepository.deleteAllByUserId(userId);
     }
 
@@ -82,7 +73,8 @@ public class ReadingListService {
             return true;
         }
         str = str.trim();
-        final String pattern = ".*[\\s~·`!！@#￥$%^……&*（()）\\-——\\-_=+【\\[\\]】｛{}｝\\|、\\\\；;：:‘'“”\"，,《<。.》>、/？?].*";
+        final String pattern =
+                ".*[\\s~·`!！@#￥$%^……&*（()）\\-——\\-_=+【\\[\\]】｛{}｝\\|、\\\\；;：:‘'“”\"，,《<。.》>、/？?].*";
         if (Pattern.matches(pattern, str) || "".equals(str)) {
             return true;
         }

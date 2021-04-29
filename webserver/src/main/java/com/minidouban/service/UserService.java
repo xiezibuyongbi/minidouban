@@ -17,7 +17,6 @@ import java.util.regex.Pattern;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 @Service
-@Transactional
 public class UserService {
     @Resource
     private UserRepository userRepository;
