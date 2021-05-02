@@ -6,13 +6,11 @@ import com.minidouban.pojo.BookPredicate;
 import com.minidouban.pojo.Page;
 import com.minidouban.pojo.PageInfo;
 import com.minidouban.service.BookService;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
