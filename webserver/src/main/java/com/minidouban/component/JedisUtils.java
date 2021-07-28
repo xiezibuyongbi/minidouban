@@ -1,5 +1,6 @@
 package com.minidouban.component;
 
+import com.minidouban.annotation.ExpireToken;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
@@ -34,9 +35,29 @@ public class JedisUtils {
         }
     }
 
-    public Long delete(String key) {
+    public long del(String key) {
         try (Jedis jedis = jedisPool.getResource()) {
             return jedis.del(key);
         }
     }
+
+    public long zAddExpire(String key, String member, double score) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.zadd(key, score, member);
+        }
+    }
+
+    public long zScore(String key, String member) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return (long) jedis.zscore(key, member).doubleValue();
+        }
+    }
+
+    public long zremRangeByScore(String key, long min, long max) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            return jedis.zremrangeByScore(key, (double) min, (double) max);
+        }
+    }
 }
+
+

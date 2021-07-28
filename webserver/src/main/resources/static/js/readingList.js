@@ -1,17 +1,4 @@
 //# sourceURL=readingList.js
-// function selectReadingList() {
-//     let selectListLabel = document.getElementById("reading-lists");
-//     let listInputLabel = document.getElementById('reading-list-selected');
-//     let options = selectListLabel.options;
-//     let selectedIndex = options.selectedIndex;
-//     listInputLabel.value = options[selectedIndex].value;
-//     document.getElementById('submit-reading-list').submit();
-//     options[selectedIndex] = true;
-//     options[0].selected = false;
-// }
-// function selectReadingList() {
-//     document.getElementById("submit-reading-list").submit();
-// }
 
 function removeBookFromList() {
     const selectedListName = $("#reading-lists").val();
@@ -21,7 +8,14 @@ function removeBookFromList() {
     }
     if (confirm("确认移除选中的书？")) {
         $("#list-name-delete-from").val(selectedListName)
-        $("#remove-book-from-list").submit();
+        $.ajax({
+            url: "/remove-book",
+            header: {
+                Authorization: getToken()
+            },
+            type: "POST",
+            data: $("#remove-book-from-list").serialize()
+        });
     }
 }
 
@@ -66,3 +60,17 @@ function renameReadingList() {
     return true;
 }
 
+//TODO 
+function getReadingList() {
+    $.ajax({
+        url: "/reading_list",
+        type: "GET",
+        data: $("#reading-lists").serialize(),
+        header: {
+            Authorization: getToken()
+        },
+        success: (booksInList) => {
+            console.log(booksInList);
+        }
+    });
+}

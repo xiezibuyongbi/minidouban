@@ -18,16 +18,21 @@ function resetPassword() {
             promptElement.text(verifyFailPrompt);
             return;
         }
-        $.post("/reset_password", {
-            username: username,
-            password: password,
-            email: email
-        }, (data) => {
-            if (data !== "") {
-                promptElement.text(data);
-            } else {
-                alert(resetPasswordSuccessPrompt);
-                window.location.href = "/login";
+        const list = {"username": username, "password": password, "email": email};
+        $.ajax({
+            url: "/reset_password",
+            type: "POST",
+            data: JSON.stringify(list),
+            header: {
+                Authorization: getToken()
+            },
+            success: (data) => {
+                if (data !== "") {
+                    promptElement.text(data);
+                } else {
+                    alert(resetPasswordSuccessPrompt);
+                    window.location.href = "/login";
+                }
             }
         });
     }

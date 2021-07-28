@@ -2,26 +2,26 @@ package com.minidouban.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minidouban.annotation.ExpireToken;
 import com.minidouban.component.JedisUtils;
-import com.minidouban.component.PasswordUtils;
+import com.minidouban.component.SafetyUtils;
 import com.minidouban.dao.UserRepository;
 import com.minidouban.pojo.User;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import static com.minidouban.configuration.Prompt.*;
 
 import javax.annotation.Resource;
 import java.util.regex.Pattern;
 
+import static com.minidouban.configuration.Prompt.*;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 @Service
+@ExpireToken
 public class UserService {
     @Resource
     private UserRepository userRepository;
     @Resource
-    private PasswordUtils passwordUtils;
+    private SafetyUtils safetyUtils;
     @Resource
     private JedisUtils jedisUtils;
     private static final int expireSeconds = 10 * 60;
@@ -43,7 +43,8 @@ public class UserService {
             return repeatedEmailPrompt;
         }
         if (userRepository
-                .insert(username, passwordUtils.encode(password), email) !=
+                .insert(username, safetyUtils.encodePassword(password),
+                        email) !=
                 1) {
             return unexpectedFailure;
         }
@@ -75,11 +76,11 @@ public class UserService {
         }
         String redisResult = jedisUtils.get(key);
         if (redisResult != null) {
-            if (jedisUtils.delete(key) == 0) {
+            if (jedisUtils.del(key) == 0) {
                 return unexpectedFailure;
             }
         }
-        String encodedPassword = passwordUtils.encode(desiredPassword);
+        String encodedPassword = safetyUtils.encodePassword(desiredPassword);
         user.setPassword(encodedPassword);
         return userRepository
                 .updatePasswordByUsernameAndByEmail(username, email,
@@ -97,8 +98,8 @@ public class UserService {
         String key = md5DigestAsHex(username.getBytes());
         User user = getUser(username, key);
         return user != null &&
-                passwordUtils.matches(password, user.getPassword()) ?
-                " " + String.valueOf(user.getUserId()) : failToLoginPrompt;
+                safetyUtils.matches(password, user.getPassword()) ?
+                " " + user.getUserId() : failToLoginPrompt;
     }
 
     private boolean usernameAlreadyExists(String username) {

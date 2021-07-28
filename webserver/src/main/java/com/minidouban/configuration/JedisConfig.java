@@ -9,7 +9,7 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 @Configuration
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:backup/application.properties")
 @EnableCaching
 public class JedisConfig {
     @Value("${spring.redis.host}")
@@ -26,6 +26,7 @@ public class JedisConfig {
 
     @Bean
     public JedisPool jedisPoolFactory() {
-        return new JedisPool(new JedisPoolConfig(), host, port, timeout, password);
+        return new JedisPool(new JedisPoolConfig(), host, port, timeout,
+                password);
     }
 }

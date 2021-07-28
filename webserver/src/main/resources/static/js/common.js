@@ -31,6 +31,20 @@ const promptRemainSecond = 3;
 const validEmailPattern = /[0-9a-zA-Z_]{1,19}@[0-9a-zA-Z_]{0,19}.*\.(com|cn|net)/;
 let verifyCode = null;
 
+function getCookie(name) {
+    const cookies = document.cookie.split(";");
+    cookies.forEach((cookie) => {
+        if (cookie.indexOf(name) === 0) {
+            return cookie.substring(name.length + 1, cookie.length);
+        }
+    })
+    return "";
+}
+
+function getToken() {
+    return getCookie("token");
+}
+
 // only work as 30 seconds counter
 // input label for email in html must have attribute `id` named email
 function getVerifyCode() {
@@ -46,15 +60,22 @@ function getVerifyCode() {
         return;
     }
     countDown($("#get-verify-code-button"), 30);
-    $.post("/get-verify-code", "email=" + email,
-        (data) => {
-            verifyCode = data;
-            if (verifyCode === "") {
-                promptLabel.text(emailNotExistPrompt);
-            }
+    $.ajax({
+        url: "/get-verify-code",
+        type: "POST",
+        contentType: "application/json;charset=UTF-8",
+        data: "email=" + email,
+        success:
+            (data) => {
+                verifyCode = data;
+                if (verifyCode === "") {
+                    promptLabel.text(emailNotExistPrompt);
+                }
+            },
+        header: {
+            Authorization: getToken()
         }
-    )
-
+    });
 }
 
 function countDown(element, total) {
@@ -102,4 +123,8 @@ function promptCountdown(element, second) {
             clearInterval(id);
         }
     }, 1000);
+}
+
+function addCookie(name, value, timestamp) {
+    document.cookie = name + "=" + value + "; " + timestamp;
 }

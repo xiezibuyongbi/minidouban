@@ -1,7 +1,10 @@
 package com.minidouban.controller;
 
+import com.alibaba.fastjson.JSON;
 import com.minidouban.component.EmailUtils;
+import com.minidouban.component.JedisUtils;
 import com.minidouban.component.RandomUtils;
+import com.minidouban.pojo.Token;
 import com.minidouban.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +16,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 
@@ -20,6 +25,9 @@ import javax.servlet.http.HttpSession;
 public class UserController {
     @Resource
     private UserService userService;
+
+    @Resource
+    private JedisUtils jedisUtils;
 
     @Resource
     private EmailUtils emailUtils;
@@ -40,14 +48,20 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public String login(Model model, HttpSession session, String username, String password) {
+    public String login(Model model, HttpServletResponse response,
+                        String username, String password) {
         String message = userService.login(username, password);
         if (message.charAt(0) != ' ') {
             model.addAttribute("msg", message);
             return "login";
         }
-        session.setAttribute("userId", Long.valueOf(message.substring(1)));
-        session.setAttribute("username", username);
+        long currentTime = System.currentTimeMillis();
+        long userId = Long.parseLong(message.substring(1));
+        Token token = new Token();
+        token.setUserId(userId);
+        token.setTimestamp(currentTime);
+        response.setHeader("Authorization", JSON.toJSONString(token));
+        jedisUtils.zAddExpire("token", String.valueOf(userId), currentTime);
         model.addAttribute("username", username);
         return "redirect:/search";
     }
@@ -71,7 +85,8 @@ public class UserController {
     @ResponseBody
     public String sendVerificationCode(@RequestParam("email") String email) {
         String code = randomUtils.getRandomVerificationCode();
-        boolean sendResult = emailUtils.sendSimpleMail(email, emailSubject, code);
+        boolean sendResult =
+                emailUtils.sendSimpleMail(email, emailSubject, code);
         if (!sendResult) {
             return "";
         }
@@ -85,8 +100,11 @@ public class UserController {
 
     @PostMapping("/reset_password")
     @ResponseBody
-    public String resetPassword(@RequestParam("username") String username, @RequestParam("password") String desiredPassword, @RequestParam("email") String email) {
-        String message = userService.resetPassword(username, desiredPassword, email);
+    public String resetPassword(@RequestParam("username") String username,
+                                @RequestParam("password") String desiredPassword,
+                                @RequestParam("email") String email) {
+        String message =
+                userService.resetPassword(username, desiredPassword, email);
         if (message != null) {
             return message;
         }

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minidouban.annotation.ExpireToken;
 import com.minidouban.component.JedisUtils;
 import com.minidouban.dao.BookRepository;
 import com.minidouban.pojo.Book;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 @Service
+@ExpireToken
 public class BookService {
     @Resource
     private BookRepository bookRepository;

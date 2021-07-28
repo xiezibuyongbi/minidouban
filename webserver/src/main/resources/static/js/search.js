@@ -7,7 +7,14 @@ function addBookToList() {
         return false;
     }
     $("#selected-list-name").val(selectedListName);
-    $("#add-book-to-list").submit();
+    $.ajax({
+        url: "/add-book?from=1",
+        type: "POST",
+        header: {
+            Authorization: getToken()
+        },
+        data: $("#add-book-to-list").serialize(),
+    });
     return true;
 }
 
@@ -31,5 +38,12 @@ function pageRequest(direction) {
     }
     pageForm.children().eq(0).val(pageNum.toString());
     pageForm.children().eq(1).val(keyword);
-    pageForm.submit();
+    $.ajax({
+        url: "/search",
+        type: "GET",
+        data: pageForm.serialize(),
+        header: {
+            Authorization: getToken()
+        }
+    });
 }

@@ -19,16 +19,21 @@ function requestRegister() {
             promptForSecond(promptElement, verifyFailPrompt, promptRemainSecond);
             return;
         }
-        $.post("/register", {
-            username: username,
-            password: password,
-            email: email
-        }, (data) => {
-            if (data !== "") {
-                promptForSecond(promptElement, data, promptRemainSecond);
-            } else {
-                alert(registerSuccessPrompt);
-                window.location.href = "/login";
+        const form = {"username": username, "password": password, "email": email};
+        $.ajax({
+            url: "/register",
+            data: JSON.stringify(form),
+            header: {
+                Authorization: getToken()
+            },
+            type: "POST",
+            success: (data) => {
+                if (data !== "") {
+                    promptForSecond(promptElement, data, promptRemainSecond);
+                } else {
+                    alert(registerSuccessPrompt);
+                    window.location.href = "/login";
+                }
             }
         });
     }

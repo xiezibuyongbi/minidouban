@@ -16,7 +16,9 @@ public interface BookRepository {
 
     public List<Book> findFuzzily(Map<String, Object> paramMap);
 
-    default public List<Book> findFuzzily(@Param("bookPredicate") BookPredicate bookPredicate, @Param("offset") int offset, @Param("pageSize") int pageSize) {
+    default public List<Book> findFuzzily(
+            @Param("bookPredicate") BookPredicate bookPredicate,
+            @Param("offset") int offset, @Param("pageSize") int pageSize) {
         Map<String, Object> paramMap = new HashMap<>();
         paramMap.put("offset", offset);
         paramMap.put("pageSize", pageSize);
@@ -28,7 +30,8 @@ public interface BookRepository {
                 e.printStackTrace();
             }
         }
-        for (Field field : bookPredicate.getClass().getSuperclass().getDeclaredFields()) {
+        for (Field field : bookPredicate.getClass().getSuperclass()
+                .getDeclaredFields()) {
             try {
                 field.setAccessible(true);
                 paramMap.put(field.getName(), field.get(bookPredicate));
@@ -39,5 +42,7 @@ public interface BookRepository {
         return findFuzzily(paramMap);
     }
 
-    public List<Book> findByKeyword(@Param("keyword") String keyword, @Param("offset") int offset, @Param("pageSize") int pageSize);
+    public List<Book> findByKeyword(@Param("keyword") String keyword,
+                                    @Param("offset") int offset,
+                                    @Param("pageSize") int pageSize);
 }

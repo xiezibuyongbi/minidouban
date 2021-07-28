@@ -1,5 +1,6 @@
 package com.minidouban.service;
 
+import com.minidouban.annotation.ExpireToken;
 import com.minidouban.dao.BookRepository;
 import com.minidouban.dao.ReadingListBookRepository;
 import com.minidouban.dao.ReadingListRepository;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@ExpireToken
 public class ReadingListBookService {
     @Resource
     private ReadingListBookRepository readingListBookRepository;

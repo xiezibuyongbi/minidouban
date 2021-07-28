@@ -1,0 +1,53 @@
+server:
+  port: 80
+  servlet:
+    encoding:
+      force: true
+      charset: UTF-8
+      enabled: true
+    session:
+      persistent: false
+  tomcat:
+    uri-encoding: UTF-8
+spring:
+  thymeleaf:
+    cache: false
+  devtools:
+    restart:
+      enabled: true
+      exclude: WEB-INF/**
+      additional-paths: src/main/java
+  datasource:
+    url: jdbc:mysql://192.168.83.100:3306/MiniDouban?useUnicode=true&characterEncoding=utf-8
+    username: dba
+    password: 94434275
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 50
+      minimum-idle: 20
+  redis:
+    host: 192.168.83.100
+    port: 6379
+    password: 94434275
+    timeout: 30000
+  mail:
+    host: smtp.qq.com
+    username: 1306506386@qq.com
+    nickname: 迷你豆瓣
+    password: fkacbentsjkzfejb
+    default-encoding: UTF-8
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          ssl:
+            enable:
+              true
+logging:
+  level:
+    root: info
+mybatis:
+  mapper-locations: classpath:mapping/*Mapper.xml
+  type-aliases-package: com.minidouban.pojo
+  configuration:
+    map-underscore-to-camel-case: true

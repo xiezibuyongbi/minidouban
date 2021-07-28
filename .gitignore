@@ -1,2 +1,4 @@
 .vscode
 backup
+webserver/src/main/resources/application.properties
+webserver/target

@@ -1,5 +1,6 @@
 package com.minidouban.service;
 
+import com.minidouban.annotation.ExpireToken;
 import com.minidouban.dao.ReadingListBookRepository;
 import com.minidouban.dao.ReadingListRepository;
 import com.minidouban.dao.UserRepository;
@@ -8,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 
 @Service
+@ExpireToken
 public class ReadingListService {
     @Resource
     private ReadingListRepository readingListRepository;
