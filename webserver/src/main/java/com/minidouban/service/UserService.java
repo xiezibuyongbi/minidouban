@@ -18,14 +18,14 @@ import static org.springframework.util.DigestUtils.md5DigestAsHex;
 @Service
 @ExpireToken
 public class UserService {
+    private static final int expireSeconds = 10 * 60;
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     @Resource
     private UserRepository userRepository;
     @Resource
     private SafetyUtils safetyUtils;
     @Resource
     private JedisUtils jedisUtils;
-    private static final int expireSeconds = 10 * 60;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public String register(String username, String password, String email) {
         if (isNullOrEmpty(username, password, email)) {
@@ -131,7 +131,7 @@ public class UserService {
         return false;
     }
 
-    private User getUser(String username, String key) {
+    User getUser(String username, String key) {
         User user = null;
         String redisResult = jedisUtils.get(key);
         if (redisResult != null) {

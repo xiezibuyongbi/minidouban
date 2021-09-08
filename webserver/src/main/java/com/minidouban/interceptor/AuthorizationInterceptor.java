@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.Arrays;
 
 public class AuthorizationInterceptor implements HandlerInterceptor {
 
@@ -38,19 +39,17 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
         }
         try {
             JSONObject plain =
-                    JSON.parseObject(new String(
-                            safetyUtils.decrypt(token.getBytes())));
+                    JSON.parseObject(Arrays.toString(safetyUtils.decrypt(token.getBytes())));
             String userId = plain.getString("userId");
             long timestamp = plain.getLongValue("timestamp");
-            if (timestamp <= System.currentTimeMillis()) {
+            if (timestamp < System.currentTimeMillis()) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.sendRedirect("/login");
                 return false;
             }
             long storedTimestamp =
                     jedisUtils.zScore("token", userId);
-            if (Math.abs(storedTimestamp - timestamp) >=
-                    ChronoUnit.SECONDS.getDuration().toMillis()) {
+            if (storedTimestamp != timestamp) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.sendRedirect("/login");
                 return false;
@@ -65,9 +64,12 @@ public class AuthorizationInterceptor implements HandlerInterceptor {
             response.setHeader(headerName,
                     safetyUtils.encrypt(plain.toJSONString()
                             .getBytes()));
-            response.sendRedirect("/search");
+            if (request.getRequestURI().equals("/login")) {
+                response.sendRedirect("/search");
+            }
             return true;
-        } catch (NullPointerException | NumberFormatException e) {
+        } catch (NullPointerException |
+                NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.sendRedirect("/login");
             return false;

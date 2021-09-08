@@ -128,3 +128,8 @@ function promptCountdown(element, second) {
 function addCookie(name, value, timestamp) {
     document.cookie = name + "=" + value + "; " + timestamp;
 }
+
+function authorize() {
+    let token = getToken();
+
+}

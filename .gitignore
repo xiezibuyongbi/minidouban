@@ -1,4 +1,7 @@
 .vscode
 backup
-webserver/src/main/resources/application.properties
+webserver/src/main/resources/application.yml
+webserver/src/main/resources/backup
 webserver/target
+cachemgr/src/main/resources/application.yml
+cachemgr/target
