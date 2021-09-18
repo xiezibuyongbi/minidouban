@@ -9,4 +9,8 @@ public class ReadingListBook {
     private long listId;
 
     private long bookId;
+
+    public static String getTableName() {
+        return "ReadingList_Book";
+    }
 }

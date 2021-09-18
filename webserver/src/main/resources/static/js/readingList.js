@@ -60,7 +60,6 @@ function renameReadingList() {
     return true;
 }
 
-//TODO 
 function getReadingList() {
     $.ajax({
         url: "/reading_list",
@@ -69,7 +68,7 @@ function getReadingList() {
         header: {
             Authorization: getToken()
         },
-        success: (booksInList) => {
+        success: (booksInList, status, xhr) => {
             console.log(booksInList);
         }
     });

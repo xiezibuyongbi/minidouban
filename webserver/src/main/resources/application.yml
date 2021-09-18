@@ -43,6 +43,24 @@ spring:
           ssl:
             enable:
               true
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      auto-commit-interval: 100
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      ack-mode: manual
+    producer:
+      retries: 10
+      acks: -1
+      properties:
+        retry:
+          backoff:
+            ms:
+              200
 logging:
   level:
     root: info

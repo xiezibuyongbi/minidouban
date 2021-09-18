@@ -21,6 +21,10 @@ public class Book {
     private Short pubYear;
     private Float price;
 
+    public static String getTableName() {
+        return "Book";
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Book)) {

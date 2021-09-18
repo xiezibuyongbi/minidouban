@@ -3,17 +3,18 @@ package com.minidouban.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minidouban.annotation.BusinessPrefix;
 import com.minidouban.annotation.ExpireToken;
+import com.minidouban.annotation.ItemId;
+import com.minidouban.annotation.SendDelMsg;
+import com.minidouban.component.CacheKeyGenerator;
 import com.minidouban.component.JedisUtils;
 import com.minidouban.dao.ReadingListBookRepository;
 import com.minidouban.dao.ReadingListRepository;
 import com.minidouban.dao.UserRepository;
 import com.minidouban.pojo.ReadingList;
-import com.minidouban.pojo.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -24,7 +25,8 @@ import java.util.regex.Pattern;
 @Service
 @ExpireToken
 public class ReadingListService {
-    private final String redisKeyPrefix = "readingList";
+    @BusinessPrefix
+    private final String redisKeyPrefix = ReadingList.getTableName();
     private final int expireSeconds = 60 * 20;
     private final ObjectMapper objectMapper = new ObjectMapper();
     @Resource
@@ -35,9 +37,11 @@ public class ReadingListService {
     private UserRepository userRepository;
     @Resource
     private JedisUtils jedisUtils;
+    @Resource
+    private CacheKeyGenerator cacheKeyGenerator;
 
     public List<ReadingList> getReadingListsOfUser(long userId) {
-        String key = getRedisKey(userId);
+        String key = cacheKeyGenerator.getRedisKey(redisKeyPrefix, userId);
         List<ReadingList> readingList = new ArrayList<>();
         try {
             readingList = objectMapper.readValue(jedisUtils.get(key), new TypeReference<List<ReadingList>>() {
@@ -62,20 +66,18 @@ public class ReadingListService {
         return readingList;
     }
 
-    // TODO 用注解给kafka发删除readinglist缓存消息
-    public int renameReadingList(long userId, String oldListName, String desiredListName) {
+    @SendDelMsg
+    public int renameReadingList(@ItemId("userId") long userId, String oldListName, String desiredListName) {
         if (containsInvalidCharacter(desiredListName)) {
             return 0;
         }
-        String key = getRedisKey(userId);
-        jedisUtils.del(key);
         int ret = readingListRepository.updateListName(userId, oldListName, desiredListName);
-        jedisUtils.del(key);
         return ret;
     }
 
     @Transactional
-    public long createReadingList(long userId, String listName) {
+    @SendDelMsg
+    public long createReadingList(@ItemId("userId") long userId, String listName) {
         if (containsInvalidCharacter(listName)) {
             return 0;
         }
@@ -90,12 +92,14 @@ public class ReadingListService {
     }
 
     @Transactional
-    public int deleteReadingList(long userId, long listId) {
+    @SendDelMsg
+    public int deleteReadingList(@ItemId("userId") long userId, long listId) {
         readingListBookRepository.deleteAllByListId(listId);
         return readingListRepository.deleteByUserIdAndListId(userId, listId);
     }
 
-    public int deleteAllReadingLists(long userId) {
+    @SendDelMsg
+    public int deleteAllReadingLists(@ItemId("userId") long userId) {
         if (!userRepository.existsById(userId)) {
             return 0;
         }
@@ -113,9 +117,5 @@ public class ReadingListService {
             return true;
         }
         return false;
-    }
-
-    private String getRedisKey(long userId) {
-        return redisKeyPrefix + md5DigestAsHex(String.valueOf(userId).getBytes());
     }
 }

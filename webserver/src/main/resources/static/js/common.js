@@ -129,6 +129,7 @@ function addCookie(name, value, timestamp) {
     document.cookie = name + "=" + value + "; " + timestamp;
 }
 
+//TODO login与其他url在request时作区分
 function authorize() {
     let token = getToken();
 

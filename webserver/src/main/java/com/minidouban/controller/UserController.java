@@ -1,10 +1,7 @@
 package com.minidouban.controller;
 
 import com.alibaba.fastjson.JSON;
-import com.minidouban.component.EmailUtils;
-import com.minidouban.component.JedisUtils;
-import com.minidouban.component.RandomUtils;
-import com.minidouban.pojo.Token;
+import com.minidouban.component.*;
 import com.minidouban.service.UserService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,26 +13,28 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-
 @Controller
 public class UserController {
+    private static final int TOKEN_EXPIRE_SECONDS = 60 * 20;
+    private static final String emailSubject = "【迷你豆瓣】注册验证";
+    private static final String TOKEN_CACHE_KEY_PREFIX = "token";
     @Resource
     private UserService userService;
-
     @Resource
     private JedisUtils jedisUtils;
-
     @Resource
     private EmailUtils emailUtils;
-
     @Resource
     private RandomUtils randomUtils;
-
-    private final static String emailSubject = "【迷你豆瓣】注册验证";
+    @Resource
+    private TokenGenerator tokenGenerator;
+    @Resource
+    private CacheKeyGenerator cacheKeyGenerator;
+    @Resource
+    private SafetyUtils safetyUtils;
 
     @GetMapping("/")
     public String homepage() {
@@ -55,13 +54,10 @@ public class UserController {
             model.addAttribute("msg", message);
             return "login";
         }
-        long currentTime = System.currentTimeMillis();
         long userId = Long.parseLong(message.substring(1));
-        Token token = new Token();
-        token.setUserId(userId);
-        token.setTimestamp(currentTime);
-        response.setHeader("Authorization", JSON.toJSONString(token));
-        jedisUtils.zAddExpire("token", String.valueOf(userId), currentTime);
+        String token = JSON.toJSONString(tokenGenerator.generateToken(userId));
+        response.setHeader("Authorization", safetyUtils.encrypt(token));
+        jedisUtils.setExpire(cacheKeyGenerator.getRedisKey(TOKEN_CACHE_KEY_PREFIX, userId), TOKEN_EXPIRE_SECONDS, token);
         model.addAttribute("username", username);
         return "redirect:/search";
     }

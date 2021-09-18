@@ -2,7 +2,11 @@ package com.minidouban.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minidouban.annotation.BusinessPrefix;
 import com.minidouban.annotation.ExpireToken;
+import com.minidouban.annotation.ItemId;
+import com.minidouban.annotation.SendDelMsg;
+import com.minidouban.component.CacheKeyGenerator;
 import com.minidouban.component.JedisUtils;
 import com.minidouban.component.SafetyUtils;
 import com.minidouban.dao.UserRepository;
@@ -13,55 +17,51 @@ import javax.annotation.Resource;
 import java.util.regex.Pattern;
 
 import static com.minidouban.configuration.Prompt.*;
-import static org.springframework.util.DigestUtils.md5DigestAsHex;
 
 @Service
 @ExpireToken
 public class UserService {
     private static final int expireSeconds = 10 * 60;
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BusinessPrefix
+    private final String redisKeyPrefix = User.getTableName();
     @Resource
     private UserRepository userRepository;
     @Resource
     private SafetyUtils safetyUtils;
     @Resource
     private JedisUtils jedisUtils;
+    @Resource
+    private CacheKeyGenerator cacheKeyGenerator;
 
-    public String register(String username, String password, String email) {
+    @SendDelMsg
+    public String register(@ItemId("username") String username, String password, String email) {
         if (isNullOrEmpty(username, password, email)) {
             return fillEmptyBlankPrompt;
         }
         if (containsInvalidCharacter(username, email)) {
             return invalidCharExistPrompt;
         }
-        String key = md5DigestAsHex(username.getBytes());
-        User user = getUser(username, key);
+        User user = getUser(username);
         if (user != null) {
             return repeatedUsernamePrompt;
         }
         if (emailAlreadyExists(email)) {
             return repeatedEmailPrompt;
         }
-        if (userRepository
-                .insert(username, safetyUtils.encodePassword(password),
-                        email) !=
-                1) {
+        if (userRepository.insert(username, safetyUtils.encodePassword(password), email) != 1) {
             return unexpectedFailure;
         }
-        user = userRepository.findByUsername(username);
+        user = getUser(username);
         if (user == null) {
-            return null;
-        }
-        try {
-            jedisUtils.setExpire(key, expireSeconds,
-                    objectMapper.writeValueAsString(user));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            return unexpectedFailure;
         }
         return null;
     }
 
-    public String resetPassword(String username, String desiredPassword,
+    @SendDelMsg
+    public String resetPassword(@ItemId("username") String username, String desiredPassword,
                                 String email) {
         if (isNullOrEmpty(username, desiredPassword, email)) {
             return fillEmptyBlankPrompt;
@@ -69,16 +69,9 @@ public class UserService {
         if (containsInvalidCharacter(username, email)) {
             return invalidCharExistPrompt;
         }
-        String key = md5DigestAsHex(username.getBytes());
-        User user = getUser(username, key);
+        User user = getUser(username);
         if (user == null || !user.getEmail().equals(email)) {
             return notExistedUserOrWrongEmailPrompt;
-        }
-        String redisResult = jedisUtils.get(key);
-        if (redisResult != null) {
-            if (jedisUtils.del(key) == 0) {
-                return unexpectedFailure;
-            }
         }
         String encodedPassword = safetyUtils.encodePassword(desiredPassword);
         user.setPassword(encodedPassword);
@@ -87,7 +80,6 @@ public class UserService {
                         encodedPassword) == 1 ? null : unexpectedFailure;
     }
 
-
     public String login(String username, String password) {
         if (isNullOrEmpty(username, password)) {
             return fillEmptyBlankPrompt;
@@ -95,8 +87,7 @@ public class UserService {
         if (containsInvalidCharacter(username)) {
             return invalidCharExistPrompt;
         }
-        String key = md5DigestAsHex(username.getBytes());
-        User user = getUser(username, key);
+        User user = getUser(username);
         return user != null &&
                 safetyUtils.matches(password, user.getPassword()) ?
                 " " + user.getUserId() : failToLoginPrompt;
@@ -131,7 +122,8 @@ public class UserService {
         return false;
     }
 
-    User getUser(String username, String key) {
+    private User getUser(String username) {
+        String key = cacheKeyGenerator.getRedisKey(redisKeyPrefix, username);
         User user = null;
         String redisResult = jedisUtils.get(key);
         if (redisResult != null) {
@@ -140,14 +132,15 @@ public class UserService {
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
+            jedisUtils.setExpire(key, expireSeconds, redisResult);
         } else {
             user = userRepository.findByUsername(username);
-        }
-        try {
-            jedisUtils.setExpire(key, expireSeconds,
-                    objectMapper.writeValueAsString(user));
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            try {
+                jedisUtils.setExpire(key, expireSeconds,
+                        objectMapper.writeValueAsString(user));
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
         }
         return user;
     }

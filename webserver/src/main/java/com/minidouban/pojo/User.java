@@ -12,6 +12,10 @@ public class User {
     private String password;
     private String email;
 
+    public static String getTableName() {
+        return "UserInfo";
+    }
+
     @Override
     public String toString() {
         return "User{" +

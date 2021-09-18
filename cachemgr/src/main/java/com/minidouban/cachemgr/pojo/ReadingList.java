@@ -11,4 +11,8 @@ public class ReadingList {
     private String listName;
 
     private long userId;
+
+    public static String getTableName() {
+        return "ReadingList";
+    }
 }

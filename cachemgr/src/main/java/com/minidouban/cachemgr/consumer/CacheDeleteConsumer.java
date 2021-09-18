@@ -37,6 +37,7 @@ public class CacheDeleteConsumer {
             if (!Pattern.matches(tableNamePattern, tableName)) {
                 continue;
             }
+            
         }
     }
 }
